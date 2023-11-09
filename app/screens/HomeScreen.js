@@ -15,10 +15,9 @@ const HomeScreen = ({ navigation }) => {
     <View style={styles.container}>
         <ScrollView>
         {chatData.map((data, index) => (
-            
             <View key={index}>
                 <View style={styles.appName}>
-                <Text style = {styles.title}>Messages</Text>
+                <Text style = {styles.title}>Home</Text>
                 </View>
               <TouchableOpacity onPress={navigateToChatScreen}>
                 <View style={styles.chatItem}>
@@ -43,22 +42,22 @@ const HomeScreen = ({ navigation }) => {
           <TouchableOpacity>
             <Image 
               style = {styles.bottomIcons}
-              source={require('../assets/search.png')} />
+              source={require('../assets/home.png')} />
           </TouchableOpacity>
           <TouchableOpacity>
             <Image 
               style = {styles.bottomIcons}
-              source={require('../assets/people.png')} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('HomeScreen')}>
-            <Image 
-              style = {styles.bottomIcons}
-              source={require('../assets/home.png')} />
+              source={require('../assets/search.png')} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => navigation.navigate('ChatScreen')}>
             <Image 
               style = {styles.bottomIcons}
               source={require('../assets/msgButton.png')} />
+          </TouchableOpacity>
+          <TouchableOpacity>
+            <Image 
+              style = {styles.bottomIconsNotifications}
+              source={require('../assets/notifications.png')} />
           </TouchableOpacity>
           <TouchableOpacity>
             <Image 
@@ -102,6 +101,10 @@ const styles = StyleSheet.create({
     height: 40,
     width: 40,
   },
+  bottomIconsNotifications: {
+    height: 35,
+    width: 35,
+  },
   title: {
     fontSize: 24,
     width: '100%',
@@ -127,6 +130,7 @@ const styles = StyleSheet.create({
     height: 55,
     width: 55,
     marginRight: 15,
+    borderRadius: 20
   },
   text: {
       fontSize: 16,
