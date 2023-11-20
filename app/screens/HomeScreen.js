@@ -64,7 +64,6 @@ const HomeScreen = ({ navigation }) => {
               style = {styles.bottomIcons}
               source={require('../assets/extra.png')} />
           </TouchableOpacity>
-          
         </View>
     </View>
   );
