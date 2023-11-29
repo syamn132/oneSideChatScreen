@@ -1,77 +1,92 @@
-import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import React, { useState, useContext } from 'react';
+import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, Switch as RNSwitch } from 'react-native';
 import colors from '../config/colors';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import UserContext from '../../Global/UserContext';
 
 const chatData = [
-  {name: 'Emma Watson', text: 'Hello there!', time: '10:30 AM'},
+  { name: 'Emma Watson', text: 'Hello there!', time: '10:30 AM' },
 ];
 
 const HomeScreen = ({ navigation }) => {
-    const navigateToChatScreen = () => {
-        navigation.navigate('ChatScreen');
-      };
+  const { setUser } = useContext(UserContext)
+  const {user} = useContext(UserContext)
+
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  const toggleSwitch = () => {
+    setUser({ isDarkMode })
+    setIsDarkMode(!isDarkMode);
+  };
+
+  const containerStyle = {
+    ...styles.container,
+    backgroundColor: isDarkMode ? '#333' : 'white',
+  };
+  const iconColor = isDarkMode ? 'white' : styles.icons.color;
+  const titleStyle = {
+    ...styles.title,
+    color: isDarkMode ? 'white' : colors.primary,
+  };
+  const titleContactName = {
+    ...styles.contactName,
+    color: isDarkMode ? 'white' : 'black',
+  };
+
+  const navigateToChatScreen = () => {
+    navigation.navigate('ChatScreen');
+  };
 
   return (
-    <View style={styles.container}>
-        <ScrollView>
+    <View style={containerStyle}>
+      <ScrollView>
         {chatData.map((data, index) => (
-            <View key={index}>
-                <View style={styles.appName}>
-                <Text style = {styles.title}>Home</Text>
-                </View>
-              <TouchableOpacity onPress={navigateToChatScreen}>
-                <View style={styles.chatItem}>
-                    <Image
-                    style={styles.profilepic}
-                    source={require('../assets/ppr.png')}
-                    >
-                    </Image>
-                    <View>
-                      <Text style={styles.contactName}>{data.name}</Text>
-                      <Text style={styles.text}>{data.text}</Text>
-                    </View>
-                    <View style={styles.time}>
-                      <Text style={styles.messageTime}>{data.time}</Text>
-                    </View>
-                </View>
-              </TouchableOpacity>
+          <View key={index}>
+            <View style={styles.appNameContainer}>
+              <View>
+                <Text style={titleStyle}>Home</Text>
+              </View>
+              <View style={styles.nightbutton}>
+                <RNSwitch
+                  value={isDarkMode}
+                  onValueChange={toggleSwitch}
+                />
+              </View>
             </View>
+            <TouchableOpacity onPress={navigateToChatScreen}>
+              <View style={styles.chatItem}>
+                <Image
+                  style={styles.profilepic}
+                  source={require('../assets/ppr.png')}
+                >
+                </Image>
+                <View>
+                  <Text style={titleContactName}>{data.name}</Text>
+                  <Text style={styles.text}>{data.text}</Text>
+                </View>
+                <View style={styles.time}>
+                  <Text style={styles.messageTime}>{data.time}</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          </View>
         ))}
-        </ScrollView>
-        <View style={styles.bottom}>
-          <TouchableOpacity>
-            <Image 
-              style = {styles.bottomIcons}
-              source={require('../assets/home.png')} />
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Image 
-              style = {styles.bottomIcons}
-              source={require('../assets/search.png')} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('ChatScreen')}>
-            <Image 
-              style = {styles.bottomIcons}
-              source={require('../assets/msgButton.png')} />
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Image 
-              style = {styles.bottomIconsNotifications}
-              source={require('../assets/notifications.png')} />
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Image 
-              style = {styles.bottomIcons}
-              source={require('../assets/extra.png')} />
-          </TouchableOpacity>
-        </View>
+      </ScrollView>
+      <View style={styles.bottom}>
+        <Icon name="home" size={styles.icons.size} color={iconColor} />
+        <Icon name="search" size={styles.icons.size} color={iconColor} />
+        <Icon name="chat" size={styles.icons.size} color={iconColor} onPress={() => navigation.navigate('ChatScreen')} />
+        <Icon name="settings" size={styles.icons.size} color={iconColor} onPress={() => navigation.navigate('SettingsPage')} />
+        <Icon name="logout" size={styles.icons.size} color={iconColor} onPress={() => navigation.navigate('LoginPage')} />
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  appName: {
-    alignItems: 'center'
+  appNameContainer: {
+    justifyContent: "center",
+    flexDirection: 'row'
   },
   bottom: {
     flexDirection: 'row',
@@ -86,10 +101,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#ccc',
     paddingBottom: 10
-},
+  },
   contactName: {
-      fontSize: 18,
-      fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   container: {
     flex: 1,
@@ -104,20 +119,18 @@ const styles = StyleSheet.create({
     height: 35,
     width: 35,
   },
-  title: {
-    fontSize: 24,
-    width: '100%',
-    paddingBottom: 15,
-    marginBottom: 18,
-    borderBottomWidth: .5,
-    textAlign: 'center',
-    fontWeight: 'bold',
-    borderColor: '#ccc',
-    color: colors.primary,
+  icons: {
+    size: 40,
+    color: colors.primary
   },
   messageTime: {
     fontSize: 14,
     color: '#888'
+  },
+  nightbutton: {
+    position: 'absolute',
+    right: 5,
+    marginTop: 5
   },
   time: {
     position: 'absolute',
@@ -132,8 +145,16 @@ const styles = StyleSheet.create({
     borderRadius: 20
   },
   text: {
-      fontSize: 16,
-      color: '#888',
+    fontSize: 16,
+    color: '#888',
+  },
+  title: {
+    fontSize: 24,
+    paddingBottom: 15,
+    marginTop: 10,
+    textAlign: 'center',
+    fontWeight: 'bold',
+    color: colors.primary,
   },
 });
 

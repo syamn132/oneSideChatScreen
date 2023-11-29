@@ -1,9 +1,11 @@
 import React from 'react';
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { View, Text, TextInput, StyleSheet, ScrollView, Image, TouchableOpacity, Button } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import { Camera } from 'expo-camera';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import UserContext from '../../Global/UserContext';
 
 import colors from '../config/colors';
 
@@ -12,8 +14,11 @@ const ChatScreen = () => {
 
     const [newMessage, setNewMessage] = useState('');
     const [selectedImage, setSelectedImage] = useState(null);
-    const [profilePicture, setProfilePicture] = useState('https://p.kindpng.com/picc/s/394-3947019_round-profile-picture-png-transparent-png.png');
+    const defaultProfilePicture = 'https://p.kindpng.com/picc/s/394-3947019_round-profile-picture-png-transparent-png.png'
+    const { user } = useContext(UserContext)
+
     const [showExtraContent, setShowExtraContent] = useState(false);
+    const [chatImages, setChatImages] = useState([]);
     const [messages, setMessages] = useState([
         { type: 'text', text: 'Hello there!', time: '10:30 AM', img: null }
     ]);
@@ -38,16 +43,17 @@ const ChatScreen = () => {
             setSelectedImage(imageUri);
             const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             setMessages([...messages, { type: 'image', time: currentTime, img: imageUri }]);
+            setChatImages([...chatImages, imageUri]);
         }
     };
 
     const askForCameraPermission = async () => {
         const { status } = await Camera.requestCameraPermissionsAsync();
-    
+
         if (status !== 'granted') {
-          console.error('Camera permission not granted');
+            console.error('Camera permission not granted');
         }
-      };
+    };
 
     const attachImage = async () => {
         const result = await ImagePicker.launchImageLibraryAsync({
@@ -60,21 +66,10 @@ const ChatScreen = () => {
             setSelectedImage(imageUri);
             const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             setMessages([...messages, { type: 'image', time: currentTime, img: imageUri }]);
+            setChatImages([...chatImages, imageUri]);
         }
     };
 
-    const profilepic = async () => {
-        let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            aspect: [3, 3],
-            quality: 1,
-        });
-        if (!result.canceled) {
-            const imageAsset = result.assets[0];
-            setProfilePicture(imageAsset.uri);
-        }
-    };
 
     const showProfile = () => {
         setShowExtraContent(!showExtraContent);
@@ -82,17 +77,18 @@ const ChatScreen = () => {
 
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, {backgroundColor: user.isDarkMode ? 'white' : '#333',}]}>
             {showExtraContent && (
                 <View style={styles.profilePicOpenScreen}>
                     {<Image source={{ uri: profilePicture }} style={styles.image} />}
                     <View style={styles.buttons}>
-                        <Button color={colors.primary} title="Change" onPress={profilepic} />
-                        <View style={{ width: 30 }} />
-                        <Button color={colors.primary} title="Upload" onPress={showProfile} />
-                        <View style={{ width: 30 }} />
-                        <Button color={colors.primary} title="Cancel" onPress={showProfile} />
+                        <Button color={colors.primary} title="Close" onPress={showProfile} />
                     </View>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chatImagesContainer}>
+                        {chatImages.map((image, index) => (
+                            <Image key={index} source={{ uri: image }} style={styles.chatImage} />
+                        ))}
+                    </ScrollView>
                 </View>
             )}
             {!showExtraContent && (
@@ -110,62 +106,34 @@ const ChatScreen = () => {
                                         <Image source={{ uri: message.img }} style={{ width: '70%', aspectRatio: 4 / 3 }} />
                                     </View>
                                 )}
-                                <Text style={styles.messageTime}>{message.time}</Text>
+                                <Text style={[styles.messageTime, {color: user.isDarkMode ? colors.black : colors.secondary}]}>{message.time}</Text>
                             </View>
                         ))}
                     </ScrollView>
                     <View style={styles.profileContainer}>
-                        <TouchableOpacity onPress={() => navigation.navigate('HomeScreen')}>
-                            <Image
-                                style={styles.backarrow}
-                                source={require('../assets/back.png')}
-                            >
-                            </Image>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={showProfile}>
+                        <Icon name="arrow-back" size={styles.icons.size} color={styles.icons.color} onPress={() => navigation.navigate('HomeScreen')} />
+                        <TouchableOpacity onPress={() => navigation.navigate('ProfileSection', { chatImages })}>
                             <Image
                                 style={styles.profilepic}
-                                source={{ uri: profilePicture }}
+                                source={{ uri: user.profilePicture || defaultProfilePicture }}
                             >
                             </Image>
                         </TouchableOpacity>
-                        <Text style={styles.profileName}>Emma Watson</Text>
-                        <Image
-                            style={styles.callbtn}
-                            source={require('../assets/call.png')}
-                        >
-                        </Image>
-                        <Image
-                            style={styles.vcallbtn}
-                            source={require('../assets/vcall.png')}
-                        >
-                        </Image>
+                        <TouchableOpacity onPress={() => navigation.navigate('ProfileSection', { chatImages })}>
+                            <Text style={styles.profileName}>{"Emma Watson"}</Text>
+                        </TouchableOpacity>
+                        <Icon name="call" size={styles.icons.size} color={styles.icons.color} onPress={() => navigation.navigate('HomeScreen')} />
+                        <Icon name="videocam" size={styles.icons.size} color={styles.icons.color} onPress={() => navigation.navigate('HomeScreen')} />
                     </View>
-                    <View style={styles.inputContainer}>
+                    <View style={[styles.inputContainer, { backgroundColor: user.isDarkMode ? 'white' : '#333', borderColor: user.isDarkMode ? colors.primary : colors.secondary}]}>
                         <TextInput
-                            style={styles.input}
+                            style={[styles.input, {borderColor: user.isDarkMode ? colors.primary : 'white'}]}
                             placeholder="Type your message"
                             value={newMessage}
                             onChangeText={text => setNewMessage(text)} />
-                        <TouchableOpacity onPress={captureImage}>
-                            <Image
-                                source={require('../assets/camera.png')}
-                                style={styles.camera}
-                            >
-                            </Image>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={attachImage}>
-                            <Image
-                                style={styles.attach}
-                                source={require('../assets/attach.png')}
-                            >
-                            </Image>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={addMessage}>
-                            <Image
-                                source={require('../assets/send.png')}
-                                style={styles.send} />
-                        </TouchableOpacity>
+                        <Icon name="photo-camera" size={styles.bicons.size} color={user.isDarkMode ? colors.primary : colors.secondary} onPress={captureImage} />
+                        <Icon name="attachment" size={styles.bicons.size} color={user.isDarkMode ? colors.primary : colors.secondary} onPress={attachImage} />
+                        <Icon name="send" size={styles.bicons.size} color={user.isDarkMode ? colors.primary : colors.secondary} onPress={addMessage} />
                     </View></>
             )}
         </View>
@@ -173,6 +141,15 @@ const ChatScreen = () => {
 };
 
 const styles = StyleSheet.create({
+    bicons: {
+        size: 40,
+        color: colors.primary
+    },
+    icons: {
+        size: 40,
+        color: colors.secondary
+    },
+
     attach: {
         height: 40,
         width: 40,
@@ -198,6 +175,19 @@ const styles = StyleSheet.create({
         right: 5
     },
 
+    chatImagesContainer: {
+        flex: 1,
+        maxWidth: '90%',
+        maxHeight: '25%',
+        marginTop: 20,
+        backgroundColor: 'lightgrey'
+    },
+
+    chatImage: {
+        height: 110,
+        width: 110,
+    },
+
     container: {
         flex: 1,
         marginTop: 30,
@@ -220,7 +210,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         width: '100%',
         borderTopWidth: 1,
-        borderColor: colors.primary,
         padding: 10,
         backgroundColor: 'white',
         position: 'absolute',
@@ -231,6 +220,7 @@ const styles = StyleSheet.create({
         flex: 1,
         height: 40,
         borderColor: colors.primary,
+        backgroundColor: colors.secondary,
         borderWidth: 2,
         marginRight: 10,
         padding: 10,
@@ -245,6 +235,7 @@ const styles = StyleSheet.create({
         borderRadius: 25,
         borderBottomRightRadius: 0
     },
+
     messageContainer: {
         flex: 1,
         padding: 15,
@@ -259,7 +250,6 @@ const styles = StyleSheet.create({
 
     messageTime: {
         marginBottom: 10,
-        color: 'black',
         fontSize: 12,
         alignSelf: 'flex-end',
     },
