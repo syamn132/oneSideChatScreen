@@ -10,13 +10,26 @@ const chatData = [
 
 const HomeScreen = ({ navigation }) => {
   const { setUser } = useContext(UserContext)
-  const {user} = useContext(UserContext)
-
+  const { user } = useContext(UserContext)
   const [isDarkMode, setIsDarkMode] = useState(false);
 
+  const handleLogout = () => {
+    if (user.out === 2) {
+      navigation.navigate('LoginPage2');
+    } else if (user.out === 3) {
+      navigation.navigate('LoginPage3');
+    } else {
+      navigation.navigate('LoginPage')
+    }
+  };
+
   const toggleSwitch = () => {
-    setUser({ isDarkMode })
     setIsDarkMode(!isDarkMode);
+    setUser((prevUser) => ({
+      ...prevUser,
+      isDarkMode
+    }));
+    // setUser({ isDarkMode })
   };
 
   const containerStyle = {
@@ -77,7 +90,7 @@ const HomeScreen = ({ navigation }) => {
         <Icon name="search" size={styles.icons.size} color={iconColor} />
         <Icon name="chat" size={styles.icons.size} color={iconColor} onPress={() => navigation.navigate('ChatScreen')} />
         <Icon name="settings" size={styles.icons.size} color={iconColor} onPress={() => navigation.navigate('SettingsPage')} />
-        <Icon name="logout" size={styles.icons.size} color={iconColor} onPress={() => navigation.navigate('LoginPage')} />
+        <Icon name="logout" size={styles.icons.size} color={iconColor} onPress={handleLogout} />
       </View>
     </View>
   );

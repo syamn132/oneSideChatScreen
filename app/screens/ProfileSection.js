@@ -1,22 +1,24 @@
 import React, { useState, useContext } from 'react';
 import { View, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
-import { Text, Button, Avatar } from 'react-native-elements';
+import { Text, Avatar } from 'react-native-elements';
 import { useNavigation } from '@react-navigation/native';
-import * as ImagePicker from 'expo-image-picker';
 import { Camera } from 'expo-camera';
 import UserContext from '../../Global/UserContext';
+import { Linking } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import colors from '../config/colors';
 
 const ProfileSettingsScreen = ({ route }) => {
-  
+
   const { setUser } = useContext(UserContext)
-  const {user} = useContext(UserContext)
+  const { user } = useContext(UserContext)
 
   const [username, setUsername] = useState("Emma Watson");
 
   const navigation = useNavigation()
-  const { chatImages } = route.params;
+  const { chatImages, links } = route.params;
+
   const [profilePicture, setProfilePicture] = useState('https://p.kindpng.com/picc/s/394-3947019_round-profile-picture-png-transparent-png.png');
   const [showExtraContent, setShowExtraContent] = useState(false);
 
@@ -28,58 +30,24 @@ const ProfileSettingsScreen = ({ route }) => {
     }
   };
 
-  const captureImage = async () => {
-    askForCameraPermission();
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 1,
-    });
-    if (!result.canceled) {
-      const imageAsset = result.assets[0];
-      const imageUri = imageAsset.uri;
-      setProfilePicture(imageUri);
-    }
-  };
-
-  const profilepic = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [3, 3],
-      quality: 1,
-    });
-    if (!result.canceled) {
-      const imageAsset = result.assets[0];
-      setProfilePicture(imageAsset.uri);
-    }
-  };
-
   const showProfile = () => {
     setShowExtraContent(!showExtraContent);
   };
 
-  const handleSaving = () => {
-    setUser({ profilePicture })
-    navigation.navigate('ChatScreen')
-  }
+  const goBack = () => {
+    navigation.goBack();
+  };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: user.isDarkMode ? 'white' : '#333', }]}>
       {showExtraContent && (
         <View style={styles.profilePicOpenScreen}>
-
           {<Image source={{ uri: profilePicture }} style={styles.image} />}
-          <View style={styles.buttons}>
-            <Button color={colors.primary} title="Camera" onPress={captureImage} />
-            <View style={{ width: 30 }} />
-            <Button color={colors.primary} title="Gallery" onPress={profilepic} />
-            <View style={{ width: 30 }} />
-            <Button color={colors.primary} title="Upload" onPress={showProfile} />
-          </View>
         </View>
       )}
       {!showExtraContent && (
         <>
+          <Icon name="arrow-back" size={styles.icons.size} color={user.isDarkMode ? colors.primary : colors.secondary} onPress={goBack} />
           <View style={styles.profileContainer}>
             <TouchableOpacity onPress={showProfile}>
               <Avatar
@@ -88,7 +56,7 @@ const ProfileSettingsScreen = ({ route }) => {
                 source={{ uri: profilePicture }}
               />
             </TouchableOpacity>
-            <Text h4 style={{ marginTop: 10 }}>
+            <Text h4 style={{ marginTop: 10, color: user.isDarkMode ? colors.black : colors.secondary }}>
               {username}
             </Text>
             <Text style={{ marginTop: 5, fontSize: 18, color: 'grey' }}>
@@ -98,7 +66,7 @@ const ProfileSettingsScreen = ({ route }) => {
 
           <Text style={{
             fontSize: 15,
-            fontWeight: 200,
+            fontWeight: 'bold',
             color: 'grey',
           }}>Media</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chatImagesContainer}>
@@ -107,10 +75,32 @@ const ProfileSettingsScreen = ({ route }) => {
             ))}
           </ScrollView>
 
-          <View style={styles.buttonContainer}>
-            <Button title="Save Changes" onPress={handleSaving} />
-            <Button title="Logout" onPress={() => navigation.navigate('LoginPage')} buttonStyle={styles.logoutButton} />
-          </View>
+          <Text style={{
+            marginTop: -220,
+            fontSize: 15,
+            fontWeight: 'bold',
+            color: 'grey',
+          }}>Links</Text>
+          
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chatImagesContainer}>
+            {links.map((link, index) => (
+              <TouchableOpacity key={index} onPress={() => Linking.openURL(link)}>
+                <View style={styles.linkItem}>
+                  <Text style={styles.linkText}>{link}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          <Text style={{
+            marginTop: -220,
+            fontSize: 15,
+            fontWeight: 'bold',
+            color: 'grey',
+          }}>Events</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chatImagesContainer}>
+
+          </ScrollView>
         </>
       )}
     </View>
@@ -118,6 +108,27 @@ const ProfileSettingsScreen = ({ route }) => {
 };
 
 const styles = StyleSheet.create({
+  icons: {
+    size: 40,
+  },
+
+  linksContainer: {
+    marginTop: 5,
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+  },
+
+  linkItem: {
+    backgroundColor: colors.primary,
+    padding: 10,
+    borderRadius: 5,
+    marginRight: 5,
+  },
+
+  linkText: {
+    color: 'white',
+  },
+
   chatImagesContainer: {
     maxHeight: 112,
     marginTop: 5,
@@ -133,7 +144,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#fff',
     marginTop: 30
   },
 

@@ -32,7 +32,7 @@ const LoginPage = () => {
   const { user } = useContext(UserContext);
 
   const [pin, setPin] = useState('');
-  const [showLogin, setShowLogin] = useState(false);
+  const [showLogin, setShowLogin] = useState(!!user.newPassword);
 
   const handleNumericPress = (value) => {
     if (pin.length < 4) {
@@ -49,7 +49,7 @@ const LoginPage = () => {
       setUser((prevUser) => ({
         ...prevUser,
         newPassword: pin,
-        isDarkMode: true
+        isDarkMode: false
       }));
       // setUser({ newPassword: pin });
       setPin('');
@@ -66,7 +66,7 @@ const LoginPage = () => {
 
   return (
     <ImageBackground
-      source={require('../assets/background-image.jpg')}
+      source={{ uri: 'https://images.unsplash.com/photo-1610987039121-d70917dcc6f6?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8d2FsbHBhcGVyJTIwZm9yJTIwbW9iaWxlfGVufDB8fDB8fHww' }}
       style={styles.backgroundImage}
     >
       <View style={styles.container}>

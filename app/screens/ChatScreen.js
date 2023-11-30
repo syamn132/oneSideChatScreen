@@ -12,6 +12,17 @@ import colors from '../config/colors';
 const ChatScreen = () => {
     const navigation = useNavigation();
 
+    // Check wheter the added msg is link or not and add it into the array
+    const [links, setLinks] = useState([]);
+    const extractLinks = (text) => {
+        const regex = /(https?|ftp):\/\/[^\s/$.?#].[^\s]*/gi
+        const regex1 = /(https?:\/\/|ftp)?(www\.[^\s/$?#][\w/.?#-]*)/gi
+        const extractedLinks = text.match(regex) || text.match(regex1);
+        if (extractedLinks) {
+            setLinks([...links, text]);
+        }
+    };
+
     const [newMessage, setNewMessage] = useState('');
     const [selectedImage, setSelectedImage] = useState(null);
     const defaultProfilePicture = 'https://p.kindpng.com/picc/s/394-3947019_round-profile-picture-png-transparent-png.png'
@@ -26,6 +37,7 @@ const ChatScreen = () => {
     const addMessage = () => {
         if (newMessage.trim() !== '') {
             const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            extractLinks(newMessage);
             setMessages([...messages, { type: 'text', text: newMessage, time: currentTime, img: null }]);
             setNewMessage('');
         }
@@ -70,14 +82,12 @@ const ChatScreen = () => {
         }
     };
 
-
     const showProfile = () => {
         setShowExtraContent(!showExtraContent);
     };
 
-
     return (
-        <View style={[styles.container, {backgroundColor: user.isDarkMode ? 'white' : '#333',}]}>
+        <View style={[styles.container, { backgroundColor: user.isDarkMode ? 'white' : '#333', }]}>
             {showExtraContent && (
                 <View style={styles.profilePicOpenScreen}>
                     {<Image source={{ uri: profilePicture }} style={styles.image} />}
@@ -106,28 +116,29 @@ const ChatScreen = () => {
                                         <Image source={{ uri: message.img }} style={{ width: '70%', aspectRatio: 4 / 3 }} />
                                     </View>
                                 )}
-                                <Text style={[styles.messageTime, {color: user.isDarkMode ? colors.black : colors.secondary}]}>{message.time}</Text>
+                                <Text style={[styles.messageTime, { color: user.isDarkMode ? colors.black : colors.secondary }]}>{message.time}</Text>
                             </View>
                         ))}
                     </ScrollView>
                     <View style={styles.profileContainer}>
                         <Icon name="arrow-back" size={styles.icons.size} color={styles.icons.color} onPress={() => navigation.navigate('HomeScreen')} />
-                        <TouchableOpacity onPress={() => navigation.navigate('ProfileSection', { chatImages })}>
+                        <TouchableOpacity onPress={() => navigation.navigate('ProfileSection', { chatImages, links })}>
                             <Image
                                 style={styles.profilepic}
-                                source={{ uri: user.profilePicture || defaultProfilePicture }}
+                                source={{ uri: defaultProfilePicture }}
                             >
                             </Image>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => navigation.navigate('ProfileSection', { chatImages })}>
+                        <TouchableOpacity onPress={() => navigation.navigate('ProfileSection', { chatImages, links })}>
                             <Text style={styles.profileName}>{"Emma Watson"}</Text>
                         </TouchableOpacity>
                         <Icon name="call" size={styles.icons.size} color={styles.icons.color} onPress={() => navigation.navigate('HomeScreen')} />
                         <Icon name="videocam" size={styles.icons.size} color={styles.icons.color} onPress={() => navigation.navigate('HomeScreen')} />
                     </View>
-                    <View style={[styles.inputContainer, { backgroundColor: user.isDarkMode ? 'white' : '#333', borderColor: user.isDarkMode ? colors.primary : colors.secondary}]}>
+
+                    <View style={[styles.inputContainer, { backgroundColor: user.isDarkMode ? 'white' : '#333', borderColor: user.isDarkMode ? colors.primary : colors.secondary }]}>
                         <TextInput
-                            style={[styles.input, {borderColor: user.isDarkMode ? colors.primary : 'white'}]}
+                            style={[styles.input, { borderColor: user.isDarkMode ? colors.primary : 'white' }]}
                             placeholder="Type your message"
                             value={newMessage}
                             onChangeText={text => setNewMessage(text)} />
@@ -141,6 +152,23 @@ const ChatScreen = () => {
 };
 
 const styles = StyleSheet.create({
+    linksContainer: {
+        marginTop: 5,
+        flexDirection: 'row-reverse',
+        alignItems: 'center',
+    },
+
+    linkItem: {
+        backgroundColor: colors.primary,
+        padding: 10,
+        borderRadius: 5,
+        marginRight: 5,
+    },
+
+    linkText: {
+        color: 'white',
+    },
+
     bicons: {
         size: 40,
         color: colors.primary

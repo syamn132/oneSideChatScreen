@@ -32,7 +32,7 @@ const LoginPage = () => {
   const { user } = useContext(UserContext);
 
   const [pin, setPin] = useState('');
-  const [showLogin, setShowLogin] = useState(false);
+  const [showLogin, setShowLogin] = useState(!!user.newPassword);
 
   const handleNumericPress = (value) => {
     if (pin.length < 4) {
@@ -49,7 +49,7 @@ const LoginPage = () => {
       setUser((prevUser) => ({
         ...prevUser,
         newPassword: pin,
-        isDarkMode: true
+        isDarkMode: false
       }));
       // setUser({ newPassword: pin });
       setPin('');
@@ -66,7 +66,7 @@ const LoginPage = () => {
 
   return (
     <ImageBackground
-      source={require('../assets/background-image.jpg')}
+      source={{ uri: 'https://wallpapercave.com/wp/wp5418955.jpg' }}
       style={styles.backgroundImage}
     >
       <View style={styles.container}>
